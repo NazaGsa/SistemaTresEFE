@@ -1,0 +1,627 @@
+{% block content %}
+
+<div class="main-content">
+  <div class="header">
+    <div class="buscador-container">
+      <input type="text" id="buscador-clientes" placeholder="Buscar clientes..." onkeyup="filtrarClientes()" />
+      <div id="no-result" style="display:none; color:#c0392b; font-weight:600; margin-top:10px;">
+        No se encontraron clientes.
+      </div>
+    </div>
+  </div>
+
+<div class="sidebar">
+  <h2>TresEFE</h2>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Inicio</a></li>
+    <li><a href="{{ url_for('clientes') }}">👥 Clientes</a></li>
+    <li><a href="{{ url_for('productos') }}">📦 Productos</a></li>
+    <li><a href="{{ url_for('ventas') }}">💵 Ventas</a></li>
+    <li><a href="{{ url_for('proveedores') }}">🚚 Proveedores</a></li>
+    <li><a href="{{ url_for('logout') }}">🔒 Cerrar sesión</a></li>
+  </ul>
+</div>
+
+<div class="content-body">
+    <div class="resumen-clientes-box">
+      <h3>Total de Clientes</h3>
+      <p>{{ clientes|length }}</p>
+    </div>
+
+<div class="clientes-body">
+  <!-- Formulario -->
+  <form action="{{ url_for('agregar_cliente') }}" method="POST" class="cliente-form">
+    <h2>Agregar nuevo cliente</h2>
+    <label for="nombre">Nombre:</label>
+    <input type="text" name="nombre" id="nombre" required />
+
+    <label for="telefono">Teléfono:</label>
+    <input type="text" name="telefono" id="telefono" required />
+
+    <label for="localidad">Localidad:</label>
+    <input type="text" name="localidad" id="localidad" required />
+
+    <label for="email">Email:</label>
+    <input type="email" name="email" id="email" required />
+
+    <button type="submit">Agregar Cliente</button>
+  </form>
+
+  <!-- Tabla -->
+  <div class="tabla-clientes-wrapper">
+    <h2>Lista de Clientes</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <div style="margin: 20px 0;">
+      <input type="text" id="filtroExport" placeholder="Filtrar clientes..." style="padding:8px; width: 200px;" />
+      <select id="formatoExport" style="padding:8px; margin-left: 10px;">
+        <option value="excel">Excel</option>
+        <option value="csv">CSV</option>
+        <option value="pdf">PDF</option>
+      </select>
+      <button id="btnExportarAvanzado" class="btn-exportar">Exportar</button>
+    </div>
+
+    <table class="tabla-clientes">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Localidad</th>
+          <th>Email</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cliente in clientes %}
+        <tr>
+          <td>{{ cliente.id }}</td>
+          <td class="cliente-nombre" style="cursor:pointer; color:#2980b9;" onclick="abrirModal({{ cliente.id }})">{{ cliente.nombre }}</td>
+          <td>{{ cliente.telefono }}</td>
+          <td>{{ cliente.localidad }}</td>
+          <td>{{ cliente.email }}</td>
+          <td>
+            <a href="{{ url_for('editar_cliente', cliente_id=cliente.id) }}" class="icon-btn edit-btn" title="Editar">✏️</a>
+            <form action="{{ url_for('eliminar_cliente', cliente_id=cliente.id) }}" method="POST" style="display:inline;">
+  <button type="submit" class="icon-btn delete-btn" onclick="return confirm('¿Estás seguro de eliminar este cliente?');" title="Eliminar">🗑️</button>
+</form>
+
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="6">No hay clientes registrados.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal ficha rápida -->
+<div id="modal-cliente" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="cerrarModal()">&times;</span>
+    <h3>Ficha rápida del cliente</h3>
+    <div id="contenido-cliente">
+      <p>Cargando...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+function filtrarClientes() {
+  const input = document.getElementById('buscador-clientes');
+  const filtro = input.value.toLowerCase().trim();
+  const filas = document.querySelectorAll('.tabla-clientes tbody tr');
+  let hayCoincidencias = false;
+
+  filas.forEach(fila => {
+    const columnas = fila.querySelectorAll('td');
+    const nombre = columnas[1]?.textContent.toLowerCase();
+    const telefono = columnas[2]?.textContent.toLowerCase();
+
+    if (nombre.includes(filtro) || telefono.includes(filtro)) {
+      fila.style.display = '';
+      hayCoincidencias = true;
+    } else {
+      fila.style.display = 'none';
+    }
+  });
+
+  document.getElementById('no-result').style.display = hayCoincidencias ? 'none' : 'block';
+}
+
+function abrirModal(clienteId) {
+  const modal = document.getElementById('modal-cliente');
+  const contenido = document.getElementById('contenido-cliente');
+  
+  modal.style.display = 'flex';
+  contenido.innerHTML = '<p>Cargando...</p>';
+
+  // Aquí puedes hacer fetch para obtener datos reales:
+  // fetch(`/cliente_detalle/${clienteId}`)
+  //   .then(res => res.json())
+  //   .then(data => renderizarDatosCliente(data))
+  //   .catch(() => contenido.innerHTML = '<p>Error cargando datos.</p>');
+
+  // Para demo, simulamos datos
+  setTimeout(() => {
+    const cliente = buscarClientePorId(clienteId);
+    if (!cliente) {
+      contenido.innerHTML = '<p>Cliente no encontrado.</p>';
+      return;
+    }
+    renderizarDatosCliente(cliente);
+  }, 300);
+}
+
+function cerrarModal() {
+  document.getElementById('modal-cliente').style.display = 'none';
+}
+
+// Simulamos buscar cliente (reemplaza con llamada a backend real)
+function buscarClientePorId(id) {
+  // Aquí debes tener acceso a los clientes para simular.
+  // Lo ideal es pasar la lista a JS o hacer fetch real.
+  // Por simplicidad, vamos a crear un objeto estático o puedes inyectar en JS desde Jinja.
+  
+  // Ejemplo con inyección de lista clientes a JS:
+  return window.clientes.find(c => c.id === id);
+}
+
+function renderizarDatosCliente(cliente) {
+  const contenido = document.getElementById('contenido-cliente');
+  contenido.innerHTML = `
+    <p><strong>Nombre:</strong> ${cliente.nombre}</p>
+    <p><strong>Teléfono:</strong> ${cliente.telefono}</p>
+    <p><strong>Localidad:</strong> ${cliente.localidad}</p>
+    <p><strong>Email:</strong> ${cliente.email}</p>
+
+    <a href="mailto:${cliente.email}" class="contact-link" title="Enviar Email">Enviar Email</a>
+    <a href="https://wa.me/${cliente.telefono}" target="_blank" class="contact-link" title="Enviar WhatsApp">WhatsApp</a>
+
+    <label for="notas-cliente">Notas internas:</label>
+    <textarea id="notas-cliente" placeholder="Escribe aquí notas sobre este cliente...">${cliente.notas || ''}</textarea>
+    <button class="save-notes" onclick="guardarNotas(${cliente.id})">Guardar Notas</button>
+  `;
+}
+
+function guardarNotas(clienteId) {
+  const notas = document.getElementById('notas-cliente').value.trim();
+  // Aquí harías llamada POST para guardar notas en base de datos
+  // fetch(`/guardar_notas/${clienteId}`, { method: 'POST', body: JSON.stringify({notas}) ... })
+
+  alert(`Notas guardadas para cliente ID ${clienteId}: ${notas}`);
+}
+
+// Cerrar modal al hacer click fuera de contenido
+window.onclick = function(event) {
+  const modal = document.getElementById('modal-cliente');
+  if (event.target == modal) {
+    cerrarModal();
+  }
+};
+
+// Inyectamos lista de clientes para demo (desde Jinja)
+document.addEventListener('DOMContentLoaded', () => {
+  window.clientes = [
+    {% for c in clientes %}
+      {id: {{ c.id }}, nombre: "{{ c.nombre }}", telefono: "{{ c.telefono }}", localidad: "{{ c.localidad }}", email: "{{ c.email }}", notas: "{{ c.notas|default('') }}" },
+    {% endfor %}
+  ];
+});
+
+</script>
+
+<script>
+  document.getElementById('btnExportarAvanzado').addEventListener('click', () => {
+    const filtro = document.getElementById('filtroExport').value.trim();
+    const formato = document.getElementById('formatoExport').value;
+
+    fetch('/exportar_clientes_avanzado', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ filtro, formato })
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Error en la exportación');
+      return response.blob();
+    })
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const extMap = { excel: 'xlsx', csv: 'csv', pdf: 'pdf' };
+      a.download = `clientes.${extMap[formato] || 'xlsx'}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    })
+    .catch(err => alert(err.message));
+  });
+
+  function cerrarModal() {
+    document.getElementById('modal-cliente').style.display = 'none';
+  }
+</script>
+{% endblock %}
+
+<style>
+  /* Tu CSS original + modal styles */
+
+body {
+  margin: 0;
+  padding: 0;
+    background-color: #F5F5F5;
+  color: #2E2E2E;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 220px;
+  background-color:rgb(53, 80, 110);
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+  box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  color: white;
+  z-index: 100;
+}
+
+.sidebar ul li:hover {
+  background-color: #357ABD; /* azul más oscuro */
+}
+
+.sidebar h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 20px;
+  font-weight: 800;
+}
+
+.sidebar ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  padding: 12px 20px;
+  transition: background 0.3s ease;
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  display: block;
+}
+
+.main-content {
+  margin-left: 220px; /* para que no quede debajo del sidebar */
+  width: calc(100% - 220px);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.header {
+  background: #fff;
+  padding: 20px 30px;
+  border-bottom: 2px solidrgb(87, 86, 85);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  z-index: 50;
+  flex-shrink: 0;
+}
+/* Para que el contenido se corra a la derecha del sidebar */
+.main
+
+  .btn-exportar {
+    display: inline-block;
+    background: #27ae60;
+    color: white;
+    padding: 30px 20.29lpx;
+    border-radius: 30px;
+    font-weight: 1000;
+    margin-bottom: 10px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+  }
+  .btn-exportar:hover {
+    background: #1e8449;
+  }
+
+  .resumen-clientes-box {
+    background: #fff;
+    padding: 5px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    text-align: center;
+    font-weight: bold;
+    color:rgb(73, 72, 72);
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  .resumen-clientes-box p {
+    font-size: 2.5rem;
+    color: #333;
+    margin: 5px 0 0;
+    background: #e67e22;
+  }
+
+ .buscador-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.buscador-container input {
+  width: 100%;
+  padding: 12px 40px 12px 16px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  background: url('data:image/svg+xml;utf8,<svg fill="%23999" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path d="M21.71 20.29l-5.4-5.4a7 7 0 10-1.41 1.41l5.4 5.4a1 1 0 001.41-1.41zM10 16a6 6 0 110-12 6 6 0 010 12z"/></svg>') no-repeat right 14px center / 20px 20px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+
+.buscador-container input:focus {
+  border-color:rgb(73, 230, 34);
+  box-shadow: 0 0 10px rgba(21, 124, 155, 0.81);
+  outline: none;
+}
+
+.content-body {
+  overflow-y: auto; /* scroll vertical para el contenido si se hace muy largo */
+  padding: 20px 30px;
+  flex-grow: 1;
+  background: #f9f9f9;
+}
+
+  .clientes-body {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+    max-width: 1800px; 
+    margin: 0 auto;
+    padding: 0 10px 20px;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+  }
+
+  .cliente-form {
+    flex: 0 0 35%;
+    background: #fff;
+    padding: 25px 20px;
+    border-radius: 20px;
+    box-shadow: 0 12px 25px rgba(230,126,34,0.12);
+    display: flex;
+    flex-direction: column;
+    font-size: 0.95rem;
+  }
+
+  .cliente-form h2 {
+    font-weight: 800;
+    color:rgb(8, 8, 8);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+  }
+
+  .cliente-form label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #555;
+  }
+
+  .cliente-form input[type="text"],
+  .cliente-form input[type="email"] {
+    padding: 8px 12px;
+    margin-bottom: 14px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .cliente-form input:focus {
+    border-color: #e67e22;
+    outline: none;
+    box-shadow: 0 0 8px rgba(230,126,34,0.35);
+  }
+
+  .cliente-form button {
+    background: linear-gradient(135deg,#e67e22,rgba(172, 111, 21, 0.73));
+    border: none;
+    padding: 12px 20px;
+    border-radius: 30px;
+    color: black;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(85, 46, 12, 0.57);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    margin-top: auto;
+  }
+
+  .cliente-form button:hover {
+    box-shadow: 0 8px 24px rgba(230,126,34,0.6);
+    transform: scale(1.05);
+  }
+
+  .tabla-clientes-wrapper {
+    flex: 1;
+    overflow-x: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .tabla-clientes {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    font-size: 1rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    table-layout: auto;
+  }
+
+  .tabla-clientes thead tr {
+    background-color:#e67e22;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+  }
+
+  .tabla-clientes th,
+  .tabla-clientes td {
+    padding: 14px 18px;
+    text-align: left;
+    overflow: visible;
+    white-space: normal;
+    word-wrap: break-word;
+  }
+
+  .tabla-clientes th:nth-child(3), 
+  .tabla-clientes td:nth-child(3) {
+    min-width: 140px;
+  }
+
+  .tabla-clientes th:nth-child(4),
+  .tabla-clientes td:nth-child(4) {
+    min-width: 160px;
+  }
+
+  .tabla-clientes th:nth-child(5),
+  .tabla-clientes td:nth-child(5) {
+    min-width: 250px;
+  }
+
+  .tabla-clientes th:nth-child(1), 
+  .tabla-clientes td:nth-child(1),
+  .tabla-clientes th:nth-child(6),
+  .tabla-clientes td:nth-child(6) {
+    width: 5%;
+    white-space: nowrap;
+  }
+
+  .tabla-clientes tbody tr {
+    background: #fff;
+    border-radius: 15px;
+   
+  }
+  /* Modal general */
+.modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: none; /* oculto por defecto */
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+/* Contenido modal */
+.modal-content {
+  background: white;
+  border-radius: 15px;
+  padding: 25px 30px;
+  width: 90%;
+  max-width: 480px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  position: relative;
+  font-size: 1rem;
+  color: #333;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* Botón cerrar modal */
+.modal-content .close {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #e67e22;
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.3s ease;
+}
+.modal-content .close:hover {
+  color: #cf711f;
+}
+
+/* Enlaces de contacto */
+.contact-link {
+  display: inline-block;
+  margin: 10px 10px 15px 0;
+  background: #e67e22;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+.contact-link:hover {
+  background: #cf711f;
+}
+
+/* Área de notas */
+#notas-cliente {
+  width: 100%;
+  min-height: 100px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  padding: 12px 15px;
+  font-size: 1rem;
+  resize: vertical;
+  font-family: 'Poppins', sans-serif;
+  color: #555;
+  margin-bottom: 15px;
+  transition: border-color 0.3s ease;
+}
+#notas-cliente:focus {
+  border-color: #e67e22;
+  outline: none;
+  box-shadow: 0 0 8px rgba(230,126,34,0.35);
+}
+
+/* Botón guardar notas */
+.save-notes {
+  background: linear-gradient(135deg, #e67e22, #f39c12);
+  border: none;
+  padding: 12px 20px;
+  border-radius: 30px;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(230,126,34,0.4);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  user-select: none;
+}
+.save-notes:hover {
+  box-shadow: 0 8px 24px rgba(230,126,34,0.6);
+  transform: scale(1.05);
+}
+</style>

@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #2c3e50, #4ca1af);
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    padding: 2rem;
+    text-align: center;
+    color: white;
+  }
+
+  .glass-card h1 {
+    font-size: 3rem;
+    font-weight: bold;
+  }
+
+  .glass-card p {
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+
+  .card-custom {
+    background-color: #ffffff10;
+    border: none;
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    padding: 2rem;
+    text-align: center;
+    color: white;
+  }
+
+  .card-custom:hover {
+    transform: translateY(-5px);
+    background-color: #ffffff15;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  }
+
+  .icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    margin-bottom: 1rem;
+    background: white;
+    color: #0d6efd;
+  }
+
+  .logo-img {
+    max-width: 150px;
+    border-radius: 50%;
+    margin-top: 2rem;
+    box-shadow: 0 0 15px rgba(255,255,255,0.3);
+  }
+
+  .dashboard-summary {
+    font-size: 1rem;
+    margin-top: 1.5rem;
+    background: rgba(255,255,255,0.08);
+    padding: 1rem;
+    border-radius: 1rem;
+    font-weight: 500;
+  }
+</style>
+
+<div class="container py-5">
+
+  <div class="glass-card mb-5">
+    <h1>Bienvenido a TresEFE</h1>
+    <p>Herrería artesanal con diseño, pasión y calidad</p>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card-custom">
+        <div class="icon-circle"><i class="fas fa-users"></i></div>
+        <h5 class="fw-bold">Clientes</h5>
+        <p>Gestioná los datos de tus clientes.</p>
+        <a href="/clientes" class="btn btn-outline-light btn-sm">Ir a Clientes</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card-custom">
+        <div class="icon-circle"><i class="fas fa-boxes"></i></div>
+        <h5 class="fw-bold">Productos</h5>
+        <p>Visualizá y administrá tus productos.</p>
+        <a href="/productos" class="btn btn-outline-light btn-sm">Ir a Productos</a>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card-custom">
+        <div class="icon-circle"><i class="fas fa-cash-register"></i></div>
+        <h5 class="fw-bold">Ventas</h5>
+        <p>Registrá ventas y consultá el historial.</p>
+        <a href="/ventas" class="btn btn-outline-light btn-sm">Ir a Ventas</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sección de resumen -->
+  <div class="dashboard-summary text-center mt-5">
+    <p>🔧 Total de productos: <strong>{{ total_productos }}</strong> | 👥 Clientes registrados: <strong>{{ total_clientes }}</strong> | 💰 Ventas realizadas: <strong>{{ total_ventas }}</strong></p>
+  </div>
+
+  <div class="text-center">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo TresEFE" class="logo-img">
+  </div>
+
+</div>
+
+{% endblock %}

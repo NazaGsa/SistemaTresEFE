@@ -1,0 +1,1 @@
+INSERT INTO proveedores VALUES(1,'Corsider (Joaquin)','3513900007','INFO@CORSIDER.COM','AV. FUERZA AÉREA 4174');

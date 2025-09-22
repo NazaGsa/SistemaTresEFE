@@ -1,0 +1,386 @@
+{% block head %}
+<style>
+  :root {
+    --color-accent: #f97316;
+    --color-accent-dark: #c2410c;
+    --color-bg: #f3f4f6;
+    --color-text: #111827;
+    --color-muted: #6b7280;
+    --color-border: #e5e7eb;
+    --color-danger: #ef4444;
+    --glass: rgba(255, 255, 255, 0.25);
+    --blur: blur(14px);
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(120deg, #fdf2e9, #fff);
+    color: var(--color-text);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    width: 220px;
+    background-color: rgb(53, 80, 110);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding-top: 20px;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+    color: white;
+    z-index: 100;
+  }
+
+  .sidebar ul li:hover {
+    background-color: #357ABD;
+  }
+
+  .sidebar h2 {
+    text-align: center;
+    font-size: 1.6rem;
+    margin-bottom: 20px;
+    font-weight: 800;
+  }
+
+  .sidebar ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  .sidebar ul li {
+    padding: 12px 20px;
+    transition: background 0.3s ease;
+  }
+
+  .sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    display: block;
+  }
+
+  .main-content {
+    margin-left: 220px;
+    width: calc(100% - 220px);
+    padding: 2rem;
+    overflow-y: auto;
+  }
+
+  .page-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--color-accent-dark);
+    text-align: center;
+    margin: 0 auto 2rem;
+    border-bottom: 3px solid var(--color-accent);
+    width: fit-content;
+    padding-bottom: 0.5rem;
+  }
+
+  .productos-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-start;
+  }
+
+  .form-panel {
+    flex: 1 1 320px;
+    background: var(--glass);
+    backdrop-filter: var(--blur);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    animation: fadeIn 1s ease;
+  }
+
+  .form-panel label {
+    font-weight: 600;
+    color: var(--color-text);
+    margin-top: 0.5rem;
+  }
+
+  .form-panel input,
+  .form-panel select,
+  .form-panel textarea {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 10px;
+    border: 1.5px solid var(--color-border);
+    width: 100%;
+    margin-bottom: 1rem;
+    transition: all 0.3s;
+  }
+
+  .form-panel input:focus,
+  .form-panel select:focus,
+  .form-panel textarea:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.2);
+    outline: none;
+  }
+
+  .form-panel button {
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-dark));
+    color: white;
+    font-weight: bold;
+    padding: 0.9rem;
+    font-size: 1.05rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s;
+  }
+
+  .form-panel button:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .productos-grid {
+    flex: 3 1 600px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 2rem;
+  }
+
+  .producto-card {
+    background: white;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s;
+    animation: floatIn 0.6s ease;
+    position: relative;
+  }
+
+  .producto-card:hover {
+    transform: translateY(-6px) scale(1.015);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+  }
+
+  .producto-foto {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-bottom: 2px solid var(--color-accent);
+  }
+
+  .producto-info {
+    padding: 1.2rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  .producto-nombre {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+
+  .producto-categoria {
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+  }
+
+  .producto-dimensiones {
+    font-size: 0.9rem;
+    color: #4b5563;
+    line-height: 1.4;
+    margin-bottom: 0.4rem;
+  }
+
+  .producto-precio {
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, #f97316, #fb923c);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 10px;
+    width: fit-content;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 8px rgba(249, 115, 22, 0.25);
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .producto-acciones {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    margin-top: 1rem;
+  }
+
+  .btn-editar, .btn-eliminar, .btn-observacion {
+    flex: 1;
+    padding: 0.6rem;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    color: white;
+  }
+
+  .btn-editar {
+    background-color: #3b82f6;
+  }
+  .btn-editar:hover {
+    background-color: #2563eb;
+  }
+
+  .btn-eliminar {
+    background-color: #ef4444;
+  }
+  .btn-eliminar:hover {
+    background-color: #b91c1c;
+  }
+
+  .btn-observacion {
+    background-color: #10b981;
+  }
+  .btn-observacion:hover {
+    background-color: #059669;
+  }
+
+  @media (max-width: 768px) {
+    .productos-wrapper {
+      flex-direction: column;
+    }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sidebar">
+  <h2>TresEFE</h2>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Inicio</a></li>
+    <li><a href="{{ url_for('clientes') }}">👥 Clientes</a></li>
+    <li><a href="{{ url_for('productos') }}">📦 Productos</a></li>
+    <li><a href="{{ url_for('ventas') }}">💵 Ventas</a></li>
+    <li><a href="{{ url_for('proveedores') }}">🚚 Proveedores</a></li>
+    <li><a href="{{ url_for('logout') }}">🔒 Cerrar sesión</a></li>
+  </ul>
+</div>
+
+<div class="main-content">
+  <h2 class="page-title">GESTIÓN DE PRODUCTOS</h2>
+
+  <form action="{{ url_for('productos') }}" method="get" style="text-align:center; margin-bottom: 1rem;">
+  <input type="text" name="search" value="{{ search }}" placeholder="Buscar producto..." style="padding: 0.5rem; width: 250px; border-radius: 8px; border: 1px solid #ccc;">
+
+  <select name="categoria_id" style="padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc;">
+    <option value="">Todas las categorías</option>
+    {% for cat in categorias %}
+      <option value="{{ cat['id'] }}" {% if categoria_id == cat['id']|string %}selected{% endif %}>{{ cat['nombre'] }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit" style="padding: 0.5rem 1rem; background: var(--color-accent); color: white; border: none; border-radius: 8px; cursor: pointer;">Buscar</button>
+  <a href="{{ url_for('productos') }}" style="margin-left: 1rem; padding: 0.5rem 1rem; background: #6b7280; color: white; border: none; border-radius: 8px; text-decoration: none;">
+    Limpiar filtros
+  </a>
+</form>
+
+
+
+  <div class="productos-wrapper">
+    <!-- Formulario -->
+    <section class="form-panel">
+      <form action="{{ url_for('agregar_producto') }}" method="POST" enctype="multipart/form-data" novalidate>
+        <label for="nombre">*Nombre:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Nombre del producto" required>
+
+        <label for="categoria">*Categoría:</label>
+        <select name="categoria" required>
+          {% for cat in categorias %}
+          <option value="{{ cat['id'] }}">{{ cat['nombre'] }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="alto">*Alto (cm):</label>
+        <input type="number" step="0.01" id="alto" name="alto" placeholder="Ej: 120.5" required>
+
+        <label for="ancho">*Ancho (cm):</label>
+        <input type="number" step="0.01" id="ancho" name="ancho" placeholder="Ej: 80" required>
+
+        <label for="profundidad">*Profundidad (cm):</label>
+        <input type="number" step="0.01" id="profundidad" name="profundidad" placeholder="Ej: 45" required>
+
+        <label for="precio">*Precio ($ARS):</label>
+        <input type="number" step="0.01" id="precio" name="precio" placeholder="Ej: $100.000" required>
+
+        <label for="foto">Foto (Formato PNG, JPG, JPEG):</label>
+        <input type="file" id="foto" name="foto" accept="image/*">
+
+        <button type="submit">Agregar Producto</button>
+      </form>
+    </section>
+
+    <!-- Grid de productos -->
+    <section class="productos-grid">
+      {% if productos %}
+      {% for producto in productos %}
+      <article class="producto-card" data-id="{{ producto['id'] }}">
+        {% if producto['foto'] %}
+        <img src="{{ url_for('static', filename='uploads/' + producto['foto']) }}" alt="{{ producto['nombre'] }}" class="producto-foto" />
+        {% else %}
+        <img src="{{ url_for('static', filename='img/no-image.png') }}" alt="Sin imagen" class="producto-foto" />
+        {% endif %}
+        <div class="producto-info">
+          <h3 class="producto-nombre">{{ producto['nombre'] }}</h3>
+          <p class="producto-categoria">{{ producto['categoria_nombre'] }}</p>
+          <p class="producto-dimensiones">
+            Alto: {{ '%.2f'|format(producto['alto']) }} cm<br>
+            Ancho: {{ '%.2f'|format(producto['ancho']) }} cm<br>
+            Profundidad: {{ '%.2f'|format(producto['profundidad']) }} cm<br>
+          </p>
+          <p class="producto-precio">
+            ${{ '%.2f'|format(producto['precio']) }}
+          </p>
+          <div class="producto-acciones">
+            <form action="{{ url_for('editar_producto', producto_id=producto['id']) }}" method="GET" style="flex: 1;">
+              <button type="submit" class="btn-editar" title="Editar producto">Editar</button>
+            </form>
+            <form action="{{ url_for('eliminar_producto', producto_id=producto['id']) }}" method="POST" style="flex: 1;"
+              onsubmit="return confirm('¿Estás seguro que deseas eliminar este producto?');">
+              <button type="submit" class="btn-eliminar" title="Eliminar producto">Eliminar</button>
+            </form>
+          </div>
+        </div>
+      </article>
+      {% endfor %}
+      {% else %}
+      <p>No hay productos registrados.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

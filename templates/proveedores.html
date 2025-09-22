@@ -1,0 +1,277 @@
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<div class="layout">
+  <aside class="sidebar">
+    <h2 class="sidebar-title">TresEFE</h2>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('home') }}">🏠 Inicio</a>
+      <a href="{{ url_for('ventas') }}">💵 Ventas</a>
+      <a href="{{ url_for('clientes') }}">👥 Clientes</a>
+      <a href="{{ url_for('productos') }}">📦 Productos</a>
+      <a href="{{ url_for('proveedores') }}" class="active">🚚 Proveedores</a>
+      <a href="{{ url_for('perfil') }}">👤 Perfil</a>
+      <a href="{{ url_for('logout') }}">🔒 Cerrar sesión</a>
+    </nav>
+  </aside>
+
+  <main class="proveedor-container">
+    <h2>Registro de Proveedores</h2>
+    <form method="GET" action="{{ url_for('proveedores') }}" class="busqueda-proveedores">
+  <input 
+    type="text" 
+    name="q" 
+    placeholder="Buscar proveedores..." 
+    value="{{ q }}" 
+    style="padding: 8px; width: 250px; border-radius: 6px; border: 1px solid #ccc;"
+  >
+  <button type="submit" style="padding: 8px 12px; background-color: #e67e22; color: white; border: none; border-radius: 6px; cursor: pointer;">
+    Buscar
+  </button>
+  {% if q %}
+    <a href="{{ url_for('proveedores') }}" style="margin-left: 15px; color: #e67e22; text-decoration: none; font-weight: bold;">
+      Limpiar
+    </a>
+  {% endif %}
+</form>
+
+    <form method="POST" action="{{ url_for('registrar_proveedor') }}" class="proveedor-form">
+      <div class="form-group">
+        <label for="nombre">Nombre del proveedor:</label>
+        <input type="text" name="nombre" id="nombre" placeholder="Ej: Aceros del Sur" required>
+      </div>
+      <div class="form-group">
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" name="telefono" id="telefono" placeholder="Ej: 3511234567" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Correo electrónico:</label>
+        <input type="email" name="email" id="email" placeholder="Ej: proveedor@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label for="direccion">Dirección:</label>
+        <input type="text" name="direccion" id="direccion" placeholder="Ej: Av. Siempreviva 123">
+      </div>
+      <button type="submit" class="btn-registrar">Registrar Proveedor</button>
+    </form>
+
+    <hr>
+    <h2>Proveedores Registrados</h2>
+    <table class="tabla-proveedores">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Email</th>
+          <th>Dirección</th>
+          <th>WhatsApp</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for proveedor in proveedores %}
+        <tr>
+          <td>{{ proveedor.nombre }}</td>
+          <td>{{ proveedor.telefono }}</td>
+          <td>{{ proveedor.email }}</td>
+          <td>{{ proveedor.direccion }}</td>
+          <td><a href="https://wa.me/54{{ proveedor.telefono }}" target="_blank" class="btn-wsp">Contactar</a></td>
+          <td>
+      <a href="{{ url_for('editar_proveedor', proveedor_id=proveedor.id) }}" class="btn-editar">Editar</a>
+      <form method="POST" action="{{ url_for('eliminar_proveedor', proveedor_id=proveedor.id) }}" style="display:inline;" onsubmit="return confirm('¿Seguro querés eliminar este proveedor?');">
+        <button type="submit" class="btn-eliminar">Eliminar</button>
+      </form>
+    </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </main>
+</div>
+
+<style>
+
+  .btn-editar {
+  background-color: #3498db; /* azul */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+  border: none;
+  cursor: pointer;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.btn-editar:hover {
+  background-color: #2980b9; /* azul más oscuro */
+}
+
+.btn-eliminar {
+  background-color: #e74c3c; /* rojo */
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: inline-block;
+}
+
+.btn-eliminar:hover {
+  background-color: #c0392b; /* rojo más oscuro */
+}
+
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+.sidebar {
+  width: 250px;
+  background: linear-gradient(135deg, #1e1e2f, #2e2e3e);
+  padding: 30px 20px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+}
+.sidebar-title {
+  font-size: 1.8rem;
+  text-align: center;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+.sidebar-nav a {
+  color: #ddd;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 12px 18px;
+  border-radius: 8px;
+  transition: background 0.3s, color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-nav a:hover,
+.sidebar-nav a.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.proveedor-container {
+  flex: 1;
+  padding: 50px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin: 40px auto;
+  max-width: 1000px;
+}
+.proveedor-container h2 {
+  font-size: 2rem;
+  color: #e67e22;
+  text-align: center;
+  margin-bottom: 30px;
+}
+.proveedor-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.form-group input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+.form-group input:focus {
+  border-color: #e67e22;
+  outline: none;
+}
+.btn-registrar {
+  padding: 14px;
+  background-color: #e67e22;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.btn-registrar:hover {
+  background-color: #cf711c;
+}
+.tabla-proveedores {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+.tabla-proveedores th,
+.tabla-proveedores td {
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+.tabla-proveedores th {
+  background-color: #e67e22;
+  color: #fff;
+}
+.btn-wsp {
+  background-color: #25D366;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+  display: inline-block;
+}
+.btn-wsp:hover {
+  background-color: #1ebe57;
+}
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 20px 10px;
+  }
+  .sidebar-nav {
+    flex-direction: row;
+    gap: 10px;
+  }
+  .proveedor-container {
+    padding: 30px 20px;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+</style>
+{% endblock %}

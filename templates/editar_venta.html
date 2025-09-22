@@ -1,0 +1,247 @@
+
+<style>
+  /* Reset y tipografía elegante */
+  body, html {
+    background: #f4f7f6;
+    font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+  }
+
+  /* Contenedor centrado con max-width y padding */
+  .container {
+    max-width: 720px;
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+  }
+
+  /* Card con sombra sutil y bordes suaves */
+  .card {
+    border-radius: 1rem !important;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.07);
+    background: white;
+    border: none;
+    overflow: hidden;
+  }
+
+  /* Header degradado suave y texto blanco */
+  .card-header {
+    background: linear-gradient(90deg, #11998e, #38ef7d);
+    color: #fff;
+    text-align: center;
+    padding: 2rem 1rem;
+    font-weight: 700;
+    font-size: 1.8rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* Form labels estilizados */
+  label.form-label {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+  }
+
+  /* Input groups - sin bordes, solo línea inferior */
+  .input-group .form-control,
+  .input-group .form-select {
+    border: none !important;
+    border-bottom: 2px solid #d1d5db !important;
+    border-radius: 0 !important;
+    padding-left: 0.75rem !important;
+    font-size: 1rem;
+    color: #34495e;
+    background: transparent;
+    transition: border-color 0.3s ease;
+  }
+
+  /* Enfoque - línea verde vibrante */
+  .input-group .form-control:focus,
+  .input-group .form-select:focus {
+    outline: none;
+    border-bottom-color: #38ef7d !important;
+    box-shadow: none;
+    color: #27ae60;
+    font-weight: 600;
+  }
+
+  /* Iconos a la izquierda, con color gris claro y fondo transparente */
+  .input-group-text {
+    background: transparent !important;
+    border: none !important;
+    color: #95a5a6;
+    font-size: 1.3rem;
+    padding-left: 0 !important;
+    padding-right: 0.5rem !important;
+  }
+
+  /* Para que el icono no tenga margen derecho extra */
+  .input-group-text i {
+    vertical-align: middle;
+  }
+
+  /* Total input readonly - con fondo gris suave y texto en negrita */
+  #total {
+    background-color: #f7f9f9 !important;
+    font-weight: 700;
+    color: #27ae60;
+    border-bottom-color: #27ae60 !important;
+  }
+
+  /* Textarea estilo moderno */
+  textarea.form-control {
+    border: 2px solid #d1d5db !important;
+    border-radius: 0.6rem !important;
+    padding: 1rem;
+    font-size: 1rem;
+    color: #34495e;
+    transition: border-color 0.3s ease;
+    resize: vertical;
+    min-height: 120px;
+  }
+  textarea.form-control:focus {
+    border-color: #38ef7d !important;
+    box-shadow: none !important;
+    font-weight: 600;
+  }
+
+  /* Botones estilos - redondeados, con sombra y efecto hover */
+  .btn-success {
+    background: #38ef7d;
+    border: none;
+    padding: 0.7rem 2rem;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 50px !important;
+    color: #fff;
+    box-shadow: 0 6px 15px rgba(56, 239, 125, 0.5);
+    transition: all 0.3s ease;
+  }
+  .btn-success:hover {
+    background: #27ae60;
+    box-shadow: 0 8px 20px rgba(39, 174, 96, 0.6);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    border: 2px solid #95a5a6;
+    color: #34495e;
+    padding: 0.7rem 2rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-radius: 50px !important;
+    transition: all 0.3s ease;
+  }
+  .btn-secondary:hover {
+    background: #ecf0f1;
+    color: #27ae60;
+    border-color: #27ae60;
+  }
+
+  /* Espaciado entre botones */
+  .btn + .btn {
+    margin-left: 1rem;
+  }
+
+  /* Responsive: columnas se vuelven 100% en pantallas chicas */
+  @media (max-width: 576px) {
+    .col-md-6, .col-md-4, .col-md-12 {
+      flex: 0 0 100% !important;
+      max-width: 100% !important;
+    }
+  }
+</style>
+
+{% block content %}
+{% if venta is not defined %}
+  <div class="alert alert-danger">Error: La variable 'venta' no está definida.</div>
+{% else %}
+  <!-- todo tu código -->
+{% endif %}
+
+<div class="container">
+  <div class="card">
+    <div class="card-header">
+      Editar Venta
+    </div>
+    <div class="card-body p-4 p-md-5">
+      <form method="POST" autocomplete="off">
+        <div class="row g-4">
+
+          <!-- Cliente -->
+          <div class="col-md-6">
+            <label for="cliente_id" class="form-label">Cliente</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+              <select id="cliente_id" name="cliente_id" class="form-select" required>
+                {% for cliente in clientes %}
+                <option value="{{ cliente.id }}" {% if cliente.id == venta['cliente_id'] %}selected{% endif %}>{{ cliente.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Producto -->
+          <div class="col-md-6">
+            <label for="producto_id" class="form-label">Producto</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-box-seam"></i></span>
+              <select id="producto_id" name="producto_id" class="form-select" onchange="actualizarTotal()" required>
+                {% for producto in productos %}
+                <option value="{{ producto.id }}" data-precio="{{ producto.precio }}" {% if producto.id == venta['producto_id'] %}selected{% endif %}>{{ producto.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="col-md-4">
+            <label for="cantidad" class="form-label">Cantidad</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-calculator"></i></span>
+              <input type="number" id="cantidad" name="cantidad" class="form-control" min="1" value="{{ venta['cantidad'] }}" onchange="actualizarTotal()" required>
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="col-md-4">
+            <label for="total" class="form-label">Total</label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+              <input type="text" id="total" name="total" class="form-control" value="{{ venta['total'] }}" readonly>
+            </div>
+          </div>
+
+          <!-- Observación -->
+          <div class="col-md-12">
+            <label for="observacion" class="form-label">Observación</label>
+            <textarea id="observacion" name="observacion" class="form-control">{{ venta['observacion'] or '' }}</textarea>
+          </div>
+
+          <!-- Botones -->
+          <div class="col-12 text-end mt-4">
+            <a href="{{ url_for('ventas') }}" class="btn btn-secondary">
+              <i class="bi bi-arrow-left"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-check-circle-fill"></i> Guardar Cambios
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  function actualizarTotal() {
+    const productoSelect = document.getElementById('producto_id');
+    const precio = parseFloat(productoSelect.selectedOptions[0].dataset.precio || 0);
+    const cantidad = parseInt(document.getElementById('cantidad').value || 1);
+    document.getElementById('total').value = (precio * cantidad).toFixed(2);
+  }
+
+  document.addEventListener('DOMContentLoaded', actualizarTotal);
+</script>
+{% endblock %}

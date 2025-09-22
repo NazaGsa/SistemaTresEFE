@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}Ventas - TresEFE{% endblock %}
+
+{% block content %}
+<div class="sidebar">
+  <h2>TresEFE</h2>
+  <ul>
+    <li><a href="{{ url_for('home') }}">🏠 Inicio</a></li>
+    <li><a href="{{ url_for('clientes') }}">👥 Clientes</a></li>
+    <li><a href="{{ url_for('productos') }}">📦 Productos</a></li>
+    <li><a href="{{ url_for('ventas') }}" class="active">💵 Ventas</a></li>
+    <li><a href="{{ url_for('proveedores') }}">🚚 Proveedores</a></li>
+    <li><a href="{{ url_for('logout') }}">🔒 Cerrar sesión</a></li>
+  </ul>
+</div>
+
+<div class="main-content container py-4">
+
+
+  <!-- Aquí va TODO el contenido de ventas: formulario, tabla, filtros, etc. -->
+
+  <!-- Card registrar venta -->
+  <div class="card shadow-lg rounded-5 border-0 mb-4">
+    <div class="card-header text-center rounded-top-5 py-4" style="background: linear-gradient(135deg, #4caf50, #2e7d32); color: white;">
+      <h2 class="fw-bold mb-0" style="letter-spacing: 0.1em;">Registrar Venta</h2>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="px-4 pt-3">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 shadow" role="alert" style="font-weight: 600; font-size: 1.1rem;">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <div class="card-body p-5">
+      <form method="POST" novalidate>
+        <div class="row g-4">
+          <!-- Cliente -->
+          <div class="col-md-6">
+            <label for="cliente" class="form-label fw-semibold fs-6 mb-2">Cliente</label>
+            <div class="input-group shadow-sm rounded-4 border border-success overflow-hidden">
+              <span class="input-group-text bg-white border-0 fs-5 px-3">
+                <i class="bi bi-person-fill text-success"></i>
+              </span>
+              <select id="cliente" name="cliente_id" class="form-select border-0 rounded-0 ps-2" required>
+                {% for cliente in clientes %}
+                <option value="{{ cliente.id }}">{{ cliente.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Producto -->
+          <div class="col-md-6">
+            <label for="producto" class="form-label fw-semibold fs-6 mb-2">Producto</label>
+            <div class="input-group shadow-sm rounded-4 border border-success overflow-hidden">
+              <span class="input-group-text bg-white border-0 fs-5 px-3">
+                <i class="bi bi-box-seam text-success"></i>
+              </span>
+              <select id="producto" name="producto_id" class="form-select border-0 rounded-0 ps-2" onchange="actualizarPrecio()" required>
+                {% for producto in productos %}
+                <option value="{{ producto.id }}" data-precio="{{ producto.precio }}">{{ producto.nombre }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <!-- Cantidad -->
+          <div class="col-md-4">
+            <label for="cantidad" class="form-label fw-semibold fs-6 mb-2">Cantidad</label>
+            <div class="input-group shadow-sm rounded-4 border border-success overflow-hidden">
+              <span class="input-group-text bg-white border-0 fs-5 px-3">
+                <i class="bi bi-calculator text-success"></i>
+              </span>
+              <input type="number" class="form-control border-0 rounded-0 ps-2" id="cantidad" name="cantidad" value="1" min="1" onchange="actualizarPrecio()" required>
+            </div>
+          </div>
+
+          <!-- Precio Unitario -->
+          <div class="col-md-4">
+            <label for="precio_unitario" class="form-label fw-semibold fs-6 mb-2">Precio Unitario</label>
+            <div class="input-group shadow-sm rounded-4 border border-success overflow-hidden">
+              <span class="input-group-text bg-white border-0 fs-5 px-3">
+                <i class="bi bi-currency-dollar text-success"></i>
+              </span>
+              <input type="text" class="form-control border-0 rounded-0 ps-2 bg-light" id="precio_unitario" readonly style="font-weight: 600; font-size: 1.1rem;">
+            </div>
+          </div>
+
+          <!-- Total -->
+          <div class="col-md-4">
+            <label for="total" class="form-label fw-semibold fs-6 mb-2">Total</label>
+            <div class="input-group shadow-sm rounded-4 border border-success overflow-hidden">
+              <span class="input-group-text bg-white border-0 fs-5 px-3">
+                <i class="bi bi-cash-coin text-success"></i>
+              </span>
+              <input type="text" class="form-control border-0 rounded-0 ps-2 bg-light" id="total" name="total" readonly style="font-weight: 600; font-size: 1.1rem;">
+            </div>
+          </div>
+        </div>
+
+        <div class="text-end mt-5">
+          <button type="submit" class="btn btn-success px-5 py-3 shadow rounded-pill fw-bold fs-5" style="transition: background-color 0.3s ease;">
+            <i class="bi bi-check-circle-fill me-2"></i>Guardar Venta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Buscador rápido -->
+  <div class="mb-3 mt-4">
+    <input
+      type="text"
+      id="buscadorVentas"
+      class="form-control"
+      placeholder="Buscar ventas por cliente, producto o fecha..."
+    >
+  </div>
+
+  <!-- Formulario filtros avanzados -->
+  <form method="GET" class="row g-3 mb-4 align-items-end">
+    <!-- filtros: cliente, producto, fechas, orden -->
+    <div class="col-md-3">
+      <label for="filtro_cliente" class="form-label">Cliente</label>
+      <select id="filtro_cliente" name="filtro_cliente" class="form-select">
+        <option value="">Todos</option>
+        {% for cliente in clientes %}
+        <option value="{{ cliente.id }}" {% if request.args.get('filtro_cliente') == cliente.id|string %}selected{% endif %}>{{ cliente.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="filtro_producto" class="form-label">Producto</label>
+      <select id="filtro_producto" name="filtro_producto" class="form-select">
+        <option value="">Todos</option>
+        {% for producto in productos %}
+        <option value="{{ producto.id }}" {% if request.args.get('filtro_producto') == producto.id|string %}selected{% endif %}>{{ producto.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-3">
+      <label for="fecha_desde" class="form-label">Fecha Desde</label>
+      <input type="date" id="fecha_desde" name="fecha_desde" class="form-control" value="{{ request.args.get('fecha_desde', '') }}">
+    </div>
+
+    <div class="col-md-3">
+      <label for="fecha_hasta" class="form-label">Fecha Hasta</label>
+      <input type="date" id="fecha_hasta" name="fecha_hasta" class="form-control" value="{{ request.args.get('fecha_hasta', '') }}">
+    </div>
+
+    <div class="col-md-3">
+      <label for="orden" class="form-label">Ordenar por</label>
+      <select id="orden" name="orden" class="form-select">
+        <option value="fecha_desc" {% if request.args.get('orden') == 'fecha_desc' %}selected{% endif %}>Fecha (más reciente)</option>
+        <option value="fecha_asc" {% if request.args.get('orden') == 'fecha_asc' %}selected{% endif %}>Fecha (más antigua)</option>
+        <option value="cliente_asc" {% if request.args.get('orden') == 'cliente_asc' %}selected{% endif %}>Cliente A-Z</option>
+        <option value="cliente_desc" {% if request.args.get('orden') == 'cliente_desc' %}selected{% endif %}>Cliente Z-A</option>
+        <option value="producto_asc" {% if request.args.get('orden') == 'producto_asc' %}selected{% endif %}>Producto A-Z</option>
+        <option value="producto_desc" {% if request.args.get('orden') == 'producto_desc' %}selected{% endif %}>Producto Z-A</option>
+      </select>
+    </div>
+
+    <div class="col-md-12 text-end">
+      <button type="submit" class="btn btn-success px-5">Filtrar</button>
+      <a href="{{ url_for('ventas') }}" class="btn btn-secondary ms-2">Limpiar</a>
+    </div>
+  </form>
+
+  <!-- Tabla ventas -->
+  <div class="card mt-3 shadow rounded-5 border-0" style="background: #fff;">
+    <div class="card-header bg-light rounded-top-5 border-bottom border-success">
+      <h4 class="mb-0 text-success fw-bold fs-4">
+        <i class="bi bi-table me-2"></i>Ventas Registradas
+      </h4>
+    </div>
+    <div class="card-body p-4" style="max-height: 420px; overflow-y: auto;">
+      {% if ventas %}
+      <table id="tablaVentas" class="table table-hover align-middle text-center table-striped">
+        <thead class="table-success sticky-top" style="top: 0; z-index: 1;">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Producto</th>
+            <th scope="col">Cantidad</th>
+            <th scope="col">Precio Unitario</th>
+            <th scope="col">Total</th>
+            <th scope="col">Fecha</th>
+            <th scope="col">Observación</th>
+            <th scope="col">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for venta in ventas %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ venta.cliente.nombre }}</td>
+            <td>{{ venta.producto.nombre }}</td>
+            <td>{{ venta.cantidad }}</td>
+            <td>${{ '%.2f' | format(venta.producto.precio) }}</td>
+            <td>${{ '%.2f' | format(venta.total) }}</td>
+            <td>{{ venta.fecha.strftime('%d/%m/%Y') }}</td>
+            <td>{{ venta.observacion or '' }}</td>
+            <td>
+              <a href="{{ url_for('editar_venta', id=venta.id) }}" class="btn btn-outline-primary btn-sm rounded-pill me-2">
+                <i class="bi bi-pencil-fill"></i>
+              </a>
+              <a href="{{ url_for('eliminar_venta', venta_id=venta.id) }}" onclick="return confirm('¿Estás seguro de eliminar esta venta?');" class="btn btn-danger btn-sm">
+                Eliminar
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <p class="text-muted text-center mb-0 fs-5">Aún no hay ventas registradas.</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function actualizarPrecio() {
+    const productoSelect = document.getElementById('producto');
+    const selectedOption = productoSelect.options[productoSelect.selectedIndex];
+    const precio = parseFloat(selectedOption.dataset.precio || 0);
+    const cantidad = parseInt(document.getElementById('cantidad').value || 1);
+    const total = precio * cantidad;
+
+    document.getElementById('precio_unitario').value = precio.toFixed(2);
+    document.getElementById('total').value = total.toFixed(2);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    actualizarPrecio();
+
+    const buscador = document.getElementById('buscadorVentas');
+    if (!buscador) return;
+
+    buscador.addEventListener('input', function() {
+      const filtro = this.value.toLowerCase();
+      const filas = document.querySelectorAll('#tablaVentas tbody tr');
+
+      filas.forEach(fila => {
+        const cliente = fila.cells[1].textContent.toLowerCase();
+        const producto = fila.cells[2].textContent.toLowerCase();
+        const fecha = fila.cells[6].textContent.toLowerCase();
+
+        fila.style.display = (cliente.includes(filtro) || producto.includes(filtro) || fecha.includes(filtro)) ? '' : 'none';
+      });
+    });
+  });
+</script>
+{% endblock %}

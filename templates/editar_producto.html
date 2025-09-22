@@ -1,0 +1,138 @@
+{% block head %}
+<style>
+  .editar-wrapper {
+    max-width: 700px;
+    margin: 0 auto;
+    background: #fff8f0;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(230, 126, 34, 0.2);
+    border: 2px solid #f0b674;
+  }
+
+  .editar-wrapper h2 {
+    text-align: center;
+    color: #d35400;
+    font-weight: 800;
+    margin-bottom: 2rem;
+  }
+
+  .form-label {
+    font-weight: 600;
+    color: #d35400;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .form-control {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    width: 100%;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    transition: border-color 0.3s;
+  }
+
+  .form-control:focus {
+    border-color: #e67e22;
+    outline: none;
+  }
+
+  .foto-preview {
+    max-width: 180px;
+    border-radius: 12px;
+    border: 2px solid #e67e22;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .form-text {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+  }
+
+  .form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .btn {
+    padding: 12px 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .btn-primary {
+    background: #e67e22;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: #d35400;
+  }
+
+  .btn-secondary {
+    background: #bdc3c7;
+    color: #2c3e50;
+  }
+
+  .btn-secondary:hover {
+    background: #95a5a6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="editar-wrapper">
+  <h2>Editar Producto</h2>
+
+  <form action="{{ url_for('editar_producto', producto_id=producto['id']) }}" method="POST" enctype="multipart/form-data">
+    <label for="nombre" class="form-label">Nombre:</label>
+    <input type="text" class="form-control" id="nombre" name="nombre" value="{{ producto['nombre'] }}" required>
+
+   <label for="categoria" class="form-label">Categoría:</label>
+<select class="form-control" id="categoria" name="categoria" required>
+  {% for cat in categorias %}
+    <option value="{{ cat['id'] }}" {% if cat['id'] == producto['categoria_id'] %}selected{% endif %}>
+      {{ cat['nombre'] }}
+    </option>
+  {% endfor %}
+</select>
+
+    <label for="alto" class="form-label">Alto (cm):</label>
+    <input type="number" step="0.01" class="form-control" id="alto" name="alto" value="{{ producto['alto'] }}" required>
+
+    <label for="ancho" class="form-label">Ancho (cm):</label>
+    <input type="number" step="0.01" class="form-control" id="ancho" name="ancho" value="{{ producto['ancho'] }}" required>
+
+    <label for="profundidad" class="form-label">Profundidad (cm):</label>
+    <input type="number" step="0.01" class="form-control" id="profundidad" name="profundidad" value="{{ producto['profundidad'] }}" required>
+
+    <label for="precio" class="form-label">Precio ($ARS):</label>
+    <input type="number" step="0.01" class="form-control" id="precio" name="precio" value="{{ producto['precio'] }}" required>
+
+    <label for="foto" class="form-label">Foto actual:</label>
+    {% if producto['foto'] %}
+      <img src="{{ url_for('static', filename='uploads/' + producto['foto']) }}" alt="Foto actual" class="foto-preview">
+    {% else %}
+      <p class="form-text">No hay imagen actual.</p>
+    {% endif %}
+
+    <label for="foto" class="form-label">Nueva Foto:</label>
+    <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+    <small class="form-text">Sube una nueva imagen si deseas reemplazar la actual.</small>
+
+    <div class="form-buttons">
+      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+      <a href="{{ url_for('productos') }}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
